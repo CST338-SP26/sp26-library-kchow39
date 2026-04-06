@@ -20,11 +20,11 @@ public class Shelf {
         books = new HashMap<>();
     }
 
-//    public Shelf(int shelfNumber, String subject) {
-//        this.shelfNumber = shelfNumber;
-//        this.subject = subject;
-//        books = new HashMap<>();
-//    }
+    public Shelf(int shelfNumber, String subject) {
+        this.shelfNumber = shelfNumber;
+        this.subject = subject;
+        books = new HashMap<>();
+    }
 
     public HashMap<Book, Integer> getBooks() {
         return books;

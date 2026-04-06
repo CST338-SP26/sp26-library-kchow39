@@ -37,38 +37,133 @@ public class Library {
             Scanner fs = new Scanner(f);
 
 
+
         }catch(FileNotFoundException e){
             return Code.FILE_NOT_FOUND_ERROR;
         }
     }
 
+    /**
+     * parses the books from a csv file
+     * @param bookCount as an int is the number of books to parse
+     * @param scan as a scanner that scans through the csv file
+     * @return a Code which tells if it was successful or not
+     */
     private Code initBooks(int bookCount, Scanner scan){
         if(bookCount < 1){
             return Code.LIBRARY_ERROR;
         }
         String[] bookArray = scan.nextLine().split(",");
-        if(convertDate(bookArray[5], null) == null){
+        if(convertDate(bookArray[Book.DUE_DATE_], null) == null){
             return Code.DATE_CONVERSION_ERROR;
         }
-        if(convertInt(bookArray[3], Code.PAGE_COUNT_ERROR) <= 0){
+        if(convertInt(bookArray[Book.PAGE_COUNT_], Code.PAGE_COUNT_ERROR) <= 0){
             return Code.PAGE_COUNT_ERROR;
         }
         for(int i = 0; i < bookCount; i++){
             try {
-                Book book = new Book(bookArray[0], bookArray[1], bookArray[2], convertInt(bookArray[3], Code.PAGE_COUNT_ERROR), bookArray[4], convertDate(bookArray[5], null));
+                Book book = new Book(bookArray[Book.ISBN_], bookArray[Book.TITLE_], bookArray[Book.SUBJECT_], convertInt(bookArray[Book.PAGE_COUNT_], Code.PAGE_COUNT_ERROR), bookArray[Book.AUTHOR_], convertDate(bookArray[Book.DUE_DATE_], null));
+                addBook(book);
             }catch(IndexOutOfBoundsException e){
                 return Code.BOOK_RECORD_COUNT_ERROR;
             }
+
         }
-        return null;
+        return Code.SUCCESS;
     }
 
+    /**
+     * parses the shelves from the csv file
+     * @param shelfCount as an integer is the number of shelves to parse
+     * @param scan as a scanner to scan the shelf information from the csv file
+     * @return a code on whether there was an error or not
+     */
     private Code initShelves(int shelfCount, Scanner scan){
+        if(shelfCount < 1){
+            return Code.SHELF_COUNT_ERROR;
+        }
+        String[] shelfArray = scan.nextLine().split(",");
+        if(convertInt(shelfArray[Shelf.SHELF_NUMBER_], Code.SHELF_COUNT_ERROR) <= 0){
+            return Code.SHELF_COUNT_ERROR;
+        }
+        for(int i = 0; i < shelfCount; i++){
+            try{
+                Shelf shelf = new Shelf(convertInt(shelfArray[Shelf.SHELF_NUMBER_], Code.SHELF_COUNT_ERROR), shelfArray[Shelf.SUBJECT_]);
+                addShelf(shelf);
+
+            } catch(IndexOutOfBoundsException e){
+                return Code.SHELF_NUMBER_PARSE_ERROR;
+            }
+        }
+        if(shelves.size() != shelfCount){
+            System.out.println("Number of shelves doesn't match expected");
+            return Code.SHELF_NUMBER_PARSE_ERROR;
+        } else {
+            return Code.SUCCESS;
+        }
 
     }
 
     private Code initReader(int readerCount, Scanner scan){
+        if(readerCount < 1){
+            return Code.READER_COUNT_ERROR;
+        }
 
+
+    }
+
+    /**
+     * adds a book to the book list
+     * @param newBook as a Book is the book being added
+     * @return a code on whether it succeeded or not
+     */
+    public Code addBook(Book newBook){
+        if(books.containsKey(newBook)){
+            books.put(newBook, books.get(newBook) + 1);
+            System.out.println(books.get(newBook) + " copies of " + newBook.getTitle() + " in the stacks");
+        } else {
+            books.put(newBook, 1);
+            System.out.println(newBook.getTitle() + " added to the stacks.");
+        }
+
+        if(shelves.containsKey(newBook.getSubject())){
+            shelves.put(newBook.getSubject(), );
+            //TODO: getShelf for this
+            return Code.SUCCESS;
+        } else {
+            System.out.println("No shelf for " + newBook.getSubject() + " books");
+            return Code.SHELF_EXISTS_ERROR;
+        }
+    }
+
+    /**
+     * Method to add shelf with only a subject
+     * @param shelfSubject as a string is the subject
+     * @return a code
+     */
+    public Code addShelf(String shelfSubject){
+        Shelf shelf = new Shelf(-1, shelfSubject);
+        return addShelf(shelf);
+    }
+
+    /**
+     * method to add a shelf given a full shelf
+     * @param shelf as a shelf that is added to shelves
+     * @return a code
+     */
+    public Code addShelf(Shelf shelf){
+        if(shelves.containsKey(shelf.getSubject())){
+            System.out.println("ERROR: Shelf already exists " + shelf);
+            return Code.SHELF_EXISTS_ERROR;
+        }
+        shelf.setShelfNumber(shelves.size() + 1);
+        shelves.put(shelf.getSubject(), shelf);
+        for(Book b : books.keySet()){
+            if(b.getSubject().equals(shelf.getSubject())){
+                shelf.addBook(b);
+            }
+        }
+        return Code.SUCCESS;
     }
 
     /**
